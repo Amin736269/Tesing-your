@@ -1,0 +1,37 @@
+import requests
+from bs4 import BeautifulSoup
+
+def get_login_token(url):
+    # İlk olarak login sayfasını al
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Formdaki token veya csrf değerini bul
+    token = soup.find('input', {'name': 'csrf_token'})['value']
+    return token
+
+def login_with_token(url, email, password, token):
+    # Form verisini oluştur
+    login_data = {
+        'email': email,
+        'password': password,
+        'csrf_token': token  # Dinamik token
+    }
+
+    # POST isteği gönder
+    response = requests.post(url, data=login_data)
+
+    # Başarılı giriş kontrolü
+    if "Welcome" in response.text:
+        print(f"Login successful for {email}:{password}")
+    else:
+        print(f"Login failed for {email}:{password}")
+
+# URL, email ve şifre bilgileri
+url = "http://example.com/login"
+email = "user@example.com"
+password = "password123"
+
+# Dinamik token al ve giriş yap
+token = get_login_token(url)
+login_with_token(url, email, password, token)
